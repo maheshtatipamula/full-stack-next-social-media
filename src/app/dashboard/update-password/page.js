@@ -6,13 +6,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { FaRegEyeSlash } from "react-icons/fa";
 
 import { FaLock, FaRegEye } from "react-icons/fa";
-import { updatePasswordSchema } from "@/schema/verifyPasswordSchema";
+
 import {
   clearUpdatePasswordErrors,
   selectUpdatePasswordErrors,
   updatePasswordApiAsync,
 } from "@/features/auth/authSlice";
 import { useRouter } from "next/navigation";
+import { updatePasswordSchema } from "@/schema/updatePasswordSchema";
 
 const initialValues = {
   oldPassword: "",
