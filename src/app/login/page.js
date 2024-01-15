@@ -101,7 +101,7 @@ const Login = () => {
                     id="username"
                     name="username"
                     type="username"
-                    placeholder="username or email"
+                    placeholder="mahesh_thatipamula"
                     onBlur={handleBlur}
                     onChange={handleChange}
                     value={values.username}
@@ -137,7 +137,7 @@ const Login = () => {
                     id="password"
                     type={showPass ? "text" : "password"}
                     onChange={handleChange}
-                    placeholder="password"
+                    placeholder="Mahesh@123"
                     value={values.password}
                     name="password"
                     onBlur={handleBlur}
