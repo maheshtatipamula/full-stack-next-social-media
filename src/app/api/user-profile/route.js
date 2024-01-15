@@ -32,16 +32,19 @@ export async function POST(req) {
     }
     const byteData = await file.arrayBuffer();
     const buffer = Buffer.from(byteData);
-    const fileName = `IMG-${Date.now()}-${file.name}`;
-    const filePath = path.join("./public/profile", fileName);
+    // const fileName = `IMG-${Date.now()}-${file.name}`;
+    // const filePath = path.join("./public/profile", fileName);
+
+    const customPath = path.join(__dirname, "../../../../public", "profile");
+    const filePath = path.join(customPath, file.name);
+
+    // await writeFile(filePath, buffer);
+    // user.profileImage = `profile/${fileName}`;
+    // await user.save();
 
     await writeFile(filePath, buffer);
-    user.profileImage = `profile/${fileName}`;
+    user.profileImage = `profile/${file.name}`;
     await user.save();
-
-    // await writeFile(path, buffer);
-    // user.profileImage = `profile/${file.name}`;
-    // await user.save();
 
     return NextResponse.json(
       { success: true, message: " image successfully uploaded", user },
