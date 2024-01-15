@@ -2,6 +2,7 @@ import { verifyToken } from "@/helpers/verifyToken";
 import User from "@/models/userModel";
 import { NextResponse } from "next/server";
 import { writeFile } from "fs/promises";
+import path from "path";
 import dbConnect from "@/config/dbConnect";
 
 dbConnect();
@@ -31,10 +32,16 @@ export async function POST(req) {
     }
     const byteData = await file.arrayBuffer();
     const buffer = Buffer.from(byteData);
-    const path = `./public/profile/${file.name}`;
-    await writeFile(path, buffer);
-    user.profileImage = `profile/${file.name}`;
+    const fileName = `IMG-${Date.now()}-${file.name}`;
+    const filePath = path.join("./public/profile", fileName);
+
+    await writeFile(filePath, buffer);
+    user.profileImage = `profile/${fileName}`;
     await user.save();
+
+    // await writeFile(path, buffer);
+    // user.profileImage = `profile/${file.name}`;
+    // await user.save();
 
     return NextResponse.json(
       { success: true, message: " image successfully uploaded", user },
