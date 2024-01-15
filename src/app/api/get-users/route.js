@@ -12,7 +12,7 @@ export async function POST(req) {
 
     const userId = await verifyToken(req);
     const user = await User.findOne({ username: searchUserName });
-    console.log(user);
+
     if (!user) {
       return NextResponse.json(
         {
@@ -35,7 +35,7 @@ export async function POST(req) {
       }
     );
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     if (error.message === "jwt expired") {
       const response = NextResponse.json(
         { message: error.message },

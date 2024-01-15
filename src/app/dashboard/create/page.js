@@ -32,13 +32,12 @@ const Create = () => {
     const formData = new FormData();
 
     formData.append("file", file);
-    console.log("hello form");
 
     try {
       const res = await axios.post("/api/post-image", formData);
 
       // console.log(res);
-      console.log(res.data.postImage);
+      // console.log(res.data.postImage);
 
       return res.data.postImage;
     } catch (error) {
@@ -58,12 +57,12 @@ const Create = () => {
     const Image = await upload();
     try {
       const res = await axios.post("/api/posts", { caption, Image });
-      console.log(res);
+      // console.log(res);
       toast.success(res.data.message);
       dispatch(explorePostsAsync());
       router.push("/dashboard");
     } catch (error) {
-      console.log(error);
+      //console.log(error);
       toast.error(error.response.data.message);
     }
   };
@@ -75,34 +74,13 @@ const Create = () => {
         setBack(res.data.user.profileImage);
       }
     } catch (error) {
-      console.log(error);
+      //console.log(error);
     }
   };
 
-  // const handleRequest = async () => {
-  //   try {
-  //     const res = await axios.put("/api/follow-request", {
-  //       friendId: "6582fa0d3856a0f4808ba8a1",
-  //       accepted: true,
-  //     });
-  //     if (res.status === 200) {
-  //       console.log(res);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // console.log(post);
-
-  // useEffect(() => {
-  //   handleBack();
-  //   handlePost();
-  // }, []);
-
   return (
     <>
-      <div className="mx-auto w-[80%] p-1">
+      <div className="mx-auto w-[80%] mb-[100px] p-1">
         <Image
           className=""
           height={400}
@@ -161,7 +139,7 @@ const Create = () => {
               placeholder="caption"
               onChange={(e) => setCaption(e.target.value)}
               value={caption}
-              className="border-b w-[50%]  border-gray-300 focus:border-sky-500 outline-none bg-transparent ml-2"
+              className="border-b w-[80%]  border-gray-300 focus:border-sky-500 outline-none bg-transparent ml-2"
             />
 
             <input type="submit" className="submit" />

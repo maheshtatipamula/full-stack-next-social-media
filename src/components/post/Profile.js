@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 
 const Profile = () => {
   const user = useSelector(selectUserObj);
-  console.log("user from ", user);
+
   const [image, setImage] = useState("");
 
   const [file, setFile] = useState();
@@ -30,13 +30,11 @@ const Profile = () => {
     const formData = new FormData();
 
     formData.append("file", file);
-    console.log("hello form");
 
     try {
       const res = await axios.post("/api/post-image", formData);
 
       // console.log(res);
-      console.log(res.data.postImage);
 
       return res.data.postImage;
     } catch (error) {
@@ -56,11 +54,9 @@ const Profile = () => {
     const caption = "hey there this is the first post";
     try {
       const res = await axios.post("/api/posts", { caption, Image });
-      console.log(res);
     } catch (error) {
       console.log(error);
     }
-    console.log(Image);
   };
 
   const handleBack = async () => {
@@ -90,15 +86,10 @@ const Profile = () => {
         friendId: "6582fa0d3856a0f4808ba8a1",
         accepted: true,
       });
-      if (res.status === 200) {
-        console.log(res);
-      }
     } catch (error) {
       console.log(error);
     }
   };
-
-  console.log(post);
 
   useEffect(() => {
     handleBack();

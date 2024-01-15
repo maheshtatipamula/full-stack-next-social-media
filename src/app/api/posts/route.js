@@ -37,7 +37,7 @@ export async function POST(req) {
       }
     );
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     if (error.message === "jwt expired") {
       const response = NextResponse.json(
         { message: error.message },
@@ -58,7 +58,13 @@ export async function PUT(req) {
 
   try {
     const userId = await verifyToken(req);
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate({
+      path: "comments",
+      options: { sort: { createdAt: -1 } },
+      populate: {
+        path: "userId",
+      },
+    });
     if (!post)
       return NextResponse.json(
         {
@@ -93,7 +99,7 @@ export async function PUT(req) {
       }
     );
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     if (error.message === "jwt expired") {
       const response = NextResponse.json(
         { message: error.message },
@@ -153,7 +159,7 @@ export async function DELETE(req) {
       { status: 200 }
     );
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     if (error.message === "jwt expired") {
       const response = NextResponse.json(
         { message: error.message },

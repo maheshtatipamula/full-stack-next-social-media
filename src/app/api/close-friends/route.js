@@ -41,13 +41,44 @@ export async function PUT(req) {
         {
           success: true,
           user,
-          message: "added from close Friends",
+          message: "added to close Friends",
         },
         {
           status: 200,
         }
       );
     }
+  } catch (error) {
+    if (error.message === "jwt expired") {
+      const response = NextResponse.json(
+        { message: error.message },
+        { status: 401 }
+      );
+
+      response.cookies.delete("token");
+
+      return response;
+    }
+    return NextResponse.json({ message: error.message }, { status: 400 });
+  }
+}
+
+export async function GET(req) {
+  try {
+    const userId = await verifyToken(req);
+    const user = await User.findById(userId)
+      .select("closeFriends")
+      .populate("closeFriends");
+
+    return NextResponse.json(
+      {
+        success: true,
+        user,
+      },
+      {
+        status: 200,
+      }
+    );
   } catch (error) {
     if (error.message === "jwt expired") {
       const response = NextResponse.json(

@@ -10,8 +10,6 @@ export async function POST(req) {
   try {
     const body = await req.json();
     let { verifyOtpToken, forgotPasswordOtp, newPassword } = body;
-    console.log(body);
-    console.log(verifyOtpToken);
 
     const newUser = jwt.verify(verifyOtpToken, process.env.FORGOT_PASSWORD);
     if (!newUser) {
@@ -54,7 +52,7 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     if (error.message === "jwt expired") {
       return NextResponse.json(
         {

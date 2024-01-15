@@ -1,5 +1,8 @@
 "use client";
-import { explorePostsAsync } from "@/features/post/postSlice";
+import {
+  explorePostsAsync,
+  followersPostsAsync,
+} from "@/features/post/postSlice";
 import {
   getLoggedInUserAsync,
   getUsersAsync,
@@ -12,18 +15,19 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { FaMagnifyingGlass } from "react-icons/fa6";
 
 const Search = () => {
   const [searchUserName, setSearchUserName] = useState();
   const searchUser = useSelector(selectSearchResults);
   const user = useSelector(selectUserObj);
-  console.log(searchUser);
+
   const searchUserError = useSelector(selectSearchResultsError);
   const dispatch = useDispatch();
 
   const handleFollowers = async (friendId) => {
     await dispatch(updateFollowersAsync(friendId));
-
+    dispatch(followersPostsAsync());
     dispatch(explorePostsAsync());
   };
 
@@ -35,23 +39,27 @@ const Search = () => {
   return (
     <div className="mx-auto w-[80%]">
       <form onSubmit={handleBioSubmit}>
-        <input
-          type="textarea"
-          placeholder="search username"
-          onChange={(e) => setSearchUserName(e.target.value)}
-          value={searchUserName}
-          className="border-b w-[50%] border-gray-300 focus:border-sky-500 outline-none bg-transparent ml-2"
-        />
-
-        <input type="submit" />
+        <div className="relative w-full md:w-[80%]">
+          {" "}
+          <input
+            type="textarea"
+            placeholder="search username"
+            onChange={(e) => setSearchUserName(e.target.value)}
+            value={searchUserName}
+            className=" border-b w-[100%] border-gray-300 focus:border-sky-500 outline-none bg-transparent ml-2"
+          />
+          <button type="submit" className="absolute top-1 right-1">
+            <FaMagnifyingGlass />
+          </button>
+        </div>
       </form>
       {searchUser && (
         <ul
           role="list"
-          className="divide-y divide-gray-200 dark:divide-gray-700 w-[80%]"
+          className="divide-y divide-gray-200 dark:divide-gray-700 w-full md:w-[82%]"
         >
           <li className="py-3 sm:py-4">
-            <div className="flex items-center">
+            <div className="flex items-center gap-0">
               <div className="flex-shrink-0">
                 <Link href={"/dashboard/users-profile"}>
                   <Image
@@ -59,7 +67,7 @@ const Search = () => {
                     alt="post author profile"
                     width={68}
                     height={68}
-                    className=" border-2 border-white rounded-full"
+                    className="w-[48px] h-[48px] md:w-[68px] md:h-[68px] border-2 border-white rounded-full"
                   />
                 </Link>{" "}
               </div>
@@ -91,7 +99,9 @@ const Search = () => {
                   >
                     {user.following.includes(searchUser._id)
                       ? "UnFollow"
-                      : " Follow"}
+                      : user.pendingRequest.includes(searchUser._id.toString())
+                      ? "Requested"
+                      : "Follow"}
                   </button>
                 )}
               </div>

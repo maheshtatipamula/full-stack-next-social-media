@@ -45,13 +45,13 @@ const EditProfile = () => {
     const formData = new FormData();
 
     formData.append("file", file);
-    console.log("hello form");
+    // console.log("hello form");
 
     try {
       const res = await axios.post("/api/user-profile", formData);
 
-      // console.log(res);
-      console.log(res.data.postImage);
+      // // console.log(res);
+      // console.log(res.data.postImage);
 
       return res.data.postImage;
     } catch (error) {
@@ -59,20 +59,20 @@ const EditProfile = () => {
     }
   };
 
-  console.log(image);
+  // console.log(image);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
 
     formData.append("file", file);
-    console.log("hello form");
+    // console.log("hello form");
 
     try {
       const res = await axios.post("/api/user-profile", formData);
       dispatch(getLoggedInUserAsync());
       toast.success(res.data.message);
-      console.log(res);
+      // console.log(res);
     } catch (error) {
       console.log(error);
     }

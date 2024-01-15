@@ -1,4 +1,5 @@
 "use client";
+import NotificationObj from "@/components/user/Notifications";
 import { selectUserObj } from "@/features/user/userSlice";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
@@ -8,30 +9,20 @@ const Notifications = () => {
   const user = useSelector(selectUserObj);
   const dispatch = useDispatch();
   const router = useRouter();
-  if (user && user.notifications) {
-  }
-  useEffect(() => {
-    if (!user) {
-      router.replace("/dashboard");
-    }
-  }, []);
+
+  useEffect(() => {}, [user]);
   return (
     <>
-      {user &&
-        user.notifications.map((noti) => (
-          <div key={noti.userId}>
-            <p>{noti.userId}</p>
-            {
-              (noti.type = "request" && (
-                <div>
-                  <button> accept</button>
-                  <button> reject</button>
-                </div>
-              ))
-            }
-            <p>{noti.type}</p>
-          </div>
-        ))}
+      {user && user.notifications.length >= 1 ? (
+        user.notifications.map((notification) => (
+          <NotificationObj
+            notification={notification}
+            key={notification.userId}
+          />
+        ))
+      ) : (
+        <p className="text-2xl"> you have no notifications </p>
+      )}
     </>
   );
 };

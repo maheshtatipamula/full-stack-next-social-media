@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema(
       required: [true, "Password is required"],
       validate: {
         validator: function (value) {
-          // Password should contain at least one capital letter, one special character, and one number
           const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).*$/;
           return passwordRegex.test(value);
         },
@@ -38,12 +37,7 @@ const userSchema = new mongoose.Schema(
     savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
     isPrivate: { type: Boolean, default: false },
     closeFriends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    notifications: [
-      {
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        type: String,
-      },
-    ],
+    notifications: [],
     posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
     lastTimeUpdatedPassword: Date,
     pendingRequest: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
@@ -51,6 +45,5 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Export the model
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User;

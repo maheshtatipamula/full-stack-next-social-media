@@ -5,6 +5,7 @@ import store from "./store";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { resetState } from "@/features/post/postSlice";
 
 export function AppWrapper({ children }) {
   const router = useRouter();

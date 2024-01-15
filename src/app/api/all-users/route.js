@@ -9,7 +9,7 @@ export async function GET(req) {
   try {
     const userId = await verifyToken(req);
 
-    const users = await User.find().select("-password");
+    let users = await User.find().select("-password");
 
     return NextResponse.json(
       {

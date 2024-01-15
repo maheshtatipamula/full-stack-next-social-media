@@ -18,7 +18,7 @@ export const updatePasswordApiAsync = createAsyncThunk(
   async ({ oldPassword, newPassword }, { rejectWithValue }) => {
     try {
       const response = await updatePasswordApi({ oldPassword, newPassword });
-      console.log(response.data);
+
       toast.success(response.data.message);
       return response.data.user;
     } catch (error) {
@@ -35,7 +35,7 @@ export const forgotPasswordApiAsync = createAsyncThunk(
   async (username, { rejectWithValue }) => {
     try {
       const response = await forgotPasswordApi(username);
-      console.log(response.data);
+
       toast.success(response.data.message);
 
       return response.data.verifyOtpToken;
@@ -60,7 +60,7 @@ export const verifyOtpApiAsync = createAsyncThunk(
         forgotPasswordOtp,
         newPassword,
       });
-      console.log(response.data);
+
       toast.success(response.data.message);
       return response.data.user;
     } catch (error) {

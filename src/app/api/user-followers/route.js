@@ -47,29 +47,47 @@ export async function PUT(req) {
         }
       );
 
-    if (!friend.isPrivate) {
-      if (friend.followers.includes(user._id)) {
-        user.following = user.following.filter(
-          (followingId) => followingId.toString() !== friend._id.toString()
-        );
+    if (friend.followers.includes(user._id)) {
+      user.following = user.following.filter(
+        (followingId) => followingId.toString() !== friend._id.toString()
+      );
 
-        await user.save();
+      await user.save();
 
-        friend.followers = friend.followers.filter(
-          (followingId) => followingId.toString() !== user._id.toString()
-        );
+      friend.followers = friend.followers.filter(
+        (followingId) => followingId.toString() !== user._id.toString()
+      );
 
-        await friend.save();
-      } else {
+      await friend.save();
+    } else {
+      if (!friend.isPrivate) {
         friend.followers.push(user._id);
         user.following.push(friend._id);
         await friend.save();
         await user.save();
+      } else {
+        const existingRequestIndex = friend.notifications.findIndex(
+          (notification) =>
+            notification.userId.toString() === user._id.toString()
+        );
+
+        if (existingRequestIndex === -1) {
+          friend.notifications.push({ userId, type: "request" });
+          user.pendingRequest.push(friend._id);
+          await friend.save();
+          await user.save();
+        } else {
+          friend.notifications.splice(existingRequestIndex, 1);
+          user.pendingRequest = user.pendingRequest.filter(
+            (pendingRequestId) =>
+              pendingRequestId.toString() !== friend._id.toString()
+          );
+          await friend.save();
+          await user.save();
+        }
       }
-    } else {
-      friend.notifications.push({ userId, type: "request" });
-      await friend.save();
     }
+
     return NextResponse.json(
       {
         success: true,
@@ -81,6 +99,7 @@ export async function PUT(req) {
       }
     );
   } catch (error) {
+    //console.log(error);
     if (error.message === "jwt expired") {
       const response = NextResponse.json(
         { message: error.message },

@@ -9,7 +9,6 @@ dbConnect();
 export async function GET(req) {
   try {
     const userId = await verifyToken(req);
-    console.log(typeof userId, userId);
 
     const user = await User.findById(userId);
     if (!user) {
@@ -26,7 +25,6 @@ export async function GET(req) {
 
     // Fetch posts from followers
     const followersPosts = await fetchFollowersPosts(user.following);
-    console.log(user);
 
     return NextResponse.json(
       {
@@ -57,9 +55,16 @@ async function fetchFollowersPosts(followerIDs) {
   try {
     const userIDs = followerIDs.map((follower) => follower.toString());
 
-    // Fetch posts from the users followed by the current user
-    const posts = await Post.find({ userId: { $in: userIDs } });
-    console.log("posts:", posts);
+    const posts = await Post.find({ userId: { $in: userIDs } })
+      .sort("-createdAt")
+      .populate("userId")
+      .populate({
+        path: "comments",
+        options: { sort: { createdAt: -1 } },
+        populate: {
+          path: "userId",
+        },
+      });
 
     return posts;
   } catch (error) {

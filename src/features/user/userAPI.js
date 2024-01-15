@@ -147,6 +147,27 @@ export function updateFollowers(friendId) {
   });
 }
 
+export function removeFollowers(friendId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.put("/api/remove-followers", { friendId });
+
+      const data = response.data;
+      resolve({ data });
+    } catch (error) {
+      if (error.response) {
+        const errorMessage = error.response.data.message || "Request failed";
+
+        reject(errorMessage);
+      } else if (error.request) {
+        reject("No response received from the server");
+      } else {
+        reject("Error setting up the request");
+      }
+    }
+  });
+}
+
 export function getUsers(searchUserName) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -170,10 +191,73 @@ export function getUsers(searchUserName) {
   });
 }
 
-export function getAllUsers(searchUserName) {
+export function getAllUsers() {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await axios.get("/api/all-users");
+
+      const data = response.data;
+      resolve({ data });
+    } catch (error) {
+      if (error.response) {
+        const errorMessage = error.response.data.message || "Request failed";
+
+        reject(errorMessage);
+      } else if (error.request) {
+        reject("No response received from the server");
+      } else {
+        reject("Error setting up the request");
+      }
+    }
+  });
+}
+
+export function ownUsersPosts() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.get("/api/own-users-posts");
+
+      const data = response.data;
+      resolve({ data });
+    } catch (error) {
+      if (error.response) {
+        const errorMessage = error.response.data.message || "Request failed";
+
+        reject(errorMessage);
+      } else if (error.request) {
+        reject("No response received from the server");
+      } else {
+        reject("Error setting up the request");
+      }
+    }
+  });
+}
+
+export function ownPublicUserPosts(id) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.get(`/api/user-posts/${id}`);
+
+      const data = response.data;
+      resolve({ data });
+    } catch (error) {
+      if (error.response) {
+        const errorMessage = error.response.data.message || "Request failed";
+
+        reject(errorMessage);
+      } else if (error.request) {
+        reject("No response received from the server");
+      } else {
+        reject("Error setting up the request");
+      }
+    }
+  });
+}
+
+export function getUsersFollowing(id) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.get(`/api/user/${id}`);
 
       const data = response.data;
       resolve({ data });
@@ -195,6 +279,27 @@ export function updateCloseFriends(friendId) {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await axios.put("/api/close-friends", { friendId });
+
+      const data = response.data;
+      resolve({ data });
+    } catch (error) {
+      if (error.response) {
+        const errorMessage = error.response.data.message || "Request failed";
+
+        reject(errorMessage);
+      } else if (error.request) {
+        reject("No response received from the server");
+      } else {
+        reject("Error setting up the request");
+      }
+    }
+  });
+}
+
+export function fetchCloseFriends() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.get("/api/close-friends");
 
       const data = response.data;
       resolve({ data });
@@ -279,6 +384,27 @@ export function LogoutUser() {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await axios.post("/api/logout");
+
+      const data = response.data;
+      resolve({ data });
+    } catch (error) {
+      if (error.response) {
+        const errorMessage = error.response.data.message || "Request failed";
+
+        reject(errorMessage);
+      } else if (error.request) {
+        reject("No response received from the server");
+      } else {
+        reject("Error setting up the request");
+      }
+    }
+  });
+}
+
+export function deleteUser() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.delete("/api/user");
 
       const data = response.data;
       resolve({ data });

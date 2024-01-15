@@ -9,7 +9,6 @@ dbConnect();
 
 export async function PUT(req) {
   const body = await req.json();
-  console.log(body);
 
   let { newPassword, oldPassword } = body;
 
@@ -41,7 +40,9 @@ export async function PUT(req) {
       const salt = await bcrypt.genSaltSync(10);
       newPassword = await bcrypt.hash(newPassword, salt);
       user.password = newPassword;
+      user.lastTimeUpdatedPassword = Date.now();
       await user.save();
+
       return NextResponse.json(
         { success: true, message: "password updated successfully!" },
         { status: 201 }
@@ -53,7 +54,7 @@ export async function PUT(req) {
       );
     }
   } catch (error) {
-    console.log(error);
+    //console.log(error);
 
     return NextResponse.json(
       { message: "something went wrong" },

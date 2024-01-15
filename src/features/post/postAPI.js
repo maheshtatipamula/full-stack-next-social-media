@@ -27,10 +27,31 @@ export function uploadPost({ Image, caption }) {
 export function editPost({ postId, caption }) {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await axios.put("/api/post-image", {
+      const response = await axios.put("/api/posts", {
         postId,
         caption,
       });
+
+      const data = response.data;
+      resolve({ data });
+    } catch (error) {
+      if (error.response) {
+        const errorMessage = error.response.data.message || "Request failed";
+
+        reject(errorMessage);
+      } else if (error.request) {
+        reject("No response received from the server");
+      } else {
+        reject("Error setting up the request");
+      }
+    }
+  });
+}
+
+export function singlePost(postId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await axios.get(`/api/posts/${postId}`);
 
       const data = response.data;
       resolve({ data });
@@ -158,13 +179,10 @@ export function commentPost({ postId, comment }) {
   });
 }
 
-export function deleteCommentOnPost({ commentId }) {
+export function deleteCommentOnPost(commentId) {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await axios.delete("/api/comments", {
-        commentId,
-      });
-
+      const response = await axios.delete(`/api/comments/${commentId}`);
       const data = response.data;
       resolve({ data });
     } catch (error) {
@@ -181,7 +199,7 @@ export function deleteCommentOnPost({ commentId }) {
   });
 }
 
-export function likeCommentOnPost({ commentId }) {
+export function likeCommentOnPost(commentId) {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await axios.put("/api/comment-likes", {

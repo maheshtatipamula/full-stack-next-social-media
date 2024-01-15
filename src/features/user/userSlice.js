@@ -5,10 +5,16 @@ import {
   LogoutUser,
   deleteBio,
   deleteProfile,
+  deleteUser,
+  fetchCloseFriends,
   fetchSavedPosts,
   getAllUsers,
   getLoggedInUser,
   getUsers,
+  getUsersFollowing,
+  ownPublicUserPosts,
+  ownUsersPosts,
+  removeFollowers,
   updateBio,
   updateCloseFriends,
   updateFollowers,
@@ -18,10 +24,13 @@ import {
   updateUserName,
 } from "./userAPI";
 import toast from "react-hot-toast";
+import { resetState } from "../post/postSlice";
 
 const initialState = {
   userObj: null,
   status: "idle",
+  userPosts: null,
+  publicPosts: null,
   savedPosts: null,
   userNameError: null,
   userBioError: null,
@@ -29,6 +38,9 @@ const initialState = {
   searchResultsError: null,
   searchUserResults: null,
   searchUserResultsError: null,
+  userFollowing: null,
+  userFollowers: null,
+  closeFriends: null,
 };
 
 export const getLoggedInUserAsync = createAsyncThunk(
@@ -36,7 +48,6 @@ export const getLoggedInUserAsync = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await getLoggedInUser();
-      console.log(response.data);
 
       return response.data.user;
     } catch (error) {
@@ -53,7 +64,7 @@ export const updateBioAsync = createAsyncThunk(
   async (bio, { rejectWithValue }) => {
     try {
       const response = await updateBio(bio);
-      console.log(response.data);
+
       toast.success("bio updated successfully");
 
       return response.data.user;
@@ -81,12 +92,13 @@ export const deleteBioAsync = createAsyncThunk(
     }
   }
 );
+
 export const updateProfileAsync = createAsyncThunk(
   "user/updateProfile",
   async (formData, { rejectWithValue }) => {
     try {
       const response = await updateProfile(formData);
-      console.log(response.data);
+
       toast.success("profile updated successfully");
 
       return response.data.user;
@@ -98,13 +110,13 @@ export const updateProfileAsync = createAsyncThunk(
     }
   }
 );
+
 export const deleteProfileAsync = createAsyncThunk(
   "user/deleteProfile",
   async (_, { rejectWithValue }) => {
     try {
       const response = await deleteProfile();
       toast.success("profile deleted successfully");
-      console.log(response.data);
 
       return response.data.user;
     } catch (error) {
@@ -115,12 +127,13 @@ export const deleteProfileAsync = createAsyncThunk(
     }
   }
 );
+
 export const updateUserNameAsync = createAsyncThunk(
   "user/updateUserName",
   async (username, { rejectWithValue }) => {
     try {
       const response = await updateUserName(username);
-      console.log(response.data);
+
       toast.success("username updated successfully");
 
       return response.data.user;
@@ -132,12 +145,12 @@ export const updateUserNameAsync = createAsyncThunk(
     }
   }
 );
+
 export const updateFollowersAsync = createAsyncThunk(
   "user/updateFollowers",
   async (friendId, { rejectWithValue }) => {
     try {
       const response = await updateFollowers(friendId);
-      console.log(response.data);
 
       return response.data.user;
     } catch (error) {
@@ -148,14 +161,47 @@ export const updateFollowersAsync = createAsyncThunk(
     }
   }
 );
+
+export const removeFollowersAsync = createAsyncThunk(
+  "user/removeFollowers",
+  async (friendId, { rejectWithValue }) => {
+    try {
+      const response = await removeFollowers(friendId);
+
+      return response.data.user;
+    } catch (error) {
+      const errorMessage = error || "Failed to update user's followers";
+      toast.error(errorMessage);
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 export const updateCloseFriendsAsync = createAsyncThunk(
   "user/updateCloseFriends",
   async (friendId, { rejectWithValue }) => {
     try {
       const response = await updateCloseFriends(friendId);
-      console.log(response.data);
+
       toast.success(response.data.message);
 
+      return response.data.user;
+    } catch (error) {
+      const errorMessage = error || "Failed to update user's close friends";
+      toast.error(errorMessage);
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const fetchCloseFriendsAsync = createAsyncThunk(
+  "user/fetchCloseFriends",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await fetchCloseFriends();
+      console.log("closefridnged", response.data);
       return response.data.user;
     } catch (error) {
       const errorMessage = error || "Failed to update user's close friends";
@@ -171,7 +217,6 @@ export const updatePrivacyAsync = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await updatePrivacy();
-      console.log(response.data);
 
       return response.data.user;
     } catch (error) {
@@ -188,7 +233,7 @@ export const updateSavedPostsAsync = createAsyncThunk(
   async (postId, { rejectWithValue }) => {
     try {
       const response = await updateSavedPosts(postId);
-      console.log(response.data);
+
       toast.success(response.data.message);
 
       return response.data.user;
@@ -206,11 +251,58 @@ export const getUsersAsync = createAsyncThunk(
   async (searchUserName, { rejectWithValue }) => {
     try {
       const response = await getUsers(searchUserName);
-      console.log(response.data);
 
       return response.data.user;
     } catch (error) {
       const errorMessage = error || "Failed to update user's saved posts";
+      toast.error(errorMessage);
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const ownUsersPostsAsync = createAsyncThunk(
+  "user/ownUsersPosts",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await ownUsersPosts();
+
+      return response.data.users.posts;
+    } catch (error) {
+      const errorMessage = error || "Failed to update user's  posts";
+      toast.error(errorMessage);
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const ownPublicUserPostsAsync = createAsyncThunk(
+  "user/ownPublicUserPosts",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await ownPublicUserPosts(id);
+
+      return response.data.user.posts;
+    } catch (error) {
+      const errorMessage = error || "Failed to update user's  posts";
+      toast.error(errorMessage);
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const getUsersFollowingAsync = createAsyncThunk(
+  "user/getUsersFollowing",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await getUsersFollowing(id);
+
+      return response.data.user;
+    } catch (error) {
+      const errorMessage = error || "Failed to update user's  posts";
       toast.error(errorMessage);
 
       return rejectWithValue(errorMessage);
@@ -223,7 +315,6 @@ export const getAllUsersAsync = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await getAllUsers();
-      console.log(response.data);
 
       return response.data.user;
     } catch (error) {
@@ -240,7 +331,6 @@ export const fetchSavedPostsAsync = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await fetchSavedPosts();
-      console.log(response.data);
 
       return response.data;
     } catch (error) {
@@ -270,12 +360,48 @@ export const LogoutUserAsync = createAsyncThunk(
   }
 );
 
+export const deleteUserAsync = createAsyncThunk(
+  "user/deleteUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await deleteUser();
+      console.log(response);
+      toast.success(response.data.message);
+
+      return response.data.user;
+    } catch (error) {
+      const errorMessage = error || "Failed to logout  user";
+      toast.error(errorMessage);
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
     addUser: (state, action) => {
       state.userObj = action.payload;
+    },
+    resetUserState: (state) => {
+      state.userObj = null;
+      state.closeFriends = null;
+      state.userPosts = null;
+      state.publicPosts = null;
+      state.savedPosts = null;
+      state.userNameError = null;
+      state.userBioError = null;
+      state.searchResults = null;
+      state.searchResultsError = null;
+      state.searchUserResults = null;
+      state.searchUserResultsError = null;
+      state.userFollowing = null;
+      state.userFollowers = null;
+    },
+    resetUsersProfile: (state) => {
+      state.searchResults = null;
     },
   },
   extraReducers: (builder) => {
@@ -373,6 +499,17 @@ const userSlice = createSlice({
       .addCase(updateFollowersAsync.rejected, (state, action) => {
         state.status = "idle";
       })
+      .addCase(removeFollowersAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(removeFollowersAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+
+        state.userObj = action.payload;
+      })
+      .addCase(removeFollowersAsync.rejected, (state, action) => {
+        state.status = "idle";
+      })
       .addCase(updateCloseFriendsAsync.pending, (state) => {
         state.status = "loading";
       })
@@ -383,6 +520,18 @@ const userSlice = createSlice({
       })
       .addCase(updateCloseFriendsAsync.rejected, (state, action) => {
         state.status = "idle";
+      })
+      .addCase(fetchCloseFriendsAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchCloseFriendsAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        // console.log(action.payload.closeFriends);
+        state.closeFriends = action.payload.closeFriends;
+      })
+      .addCase(fetchCloseFriendsAsync.rejected, (state, action) => {
+        state.status = "idle";
+        state.closeFriends = null;
       })
       .addCase(updateSavedPostsAsync.pending, (state) => {
         state.status = "loading";
@@ -424,8 +573,6 @@ const userSlice = createSlice({
       .addCase(getUsersAsync.fulfilled, (state, action) => {
         state.status = "idle";
         state.searchResultsError = null;
-        console.log(action.payload);
-
         state.searchResults = action.payload;
       })
       .addCase(getUsersAsync.rejected, (state, action) => {
@@ -433,26 +580,101 @@ const userSlice = createSlice({
         state.searchResults = null;
         state.searchResultsError = action.payload;
       })
+      .addCase(getUsersFollowingAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(getUsersFollowingAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.userFollowers = action.payload.followers;
+        state.userFollowing = action.payload.following;
+      })
+      .addCase(getUsersFollowingAsync.rejected, (state, action) => {
+        state.status = "idle";
+        state.userFollowers = null;
+        state.userFollowing = null;
+      })
+      .addCase(ownUsersPostsAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(ownUsersPostsAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.userPosts = action.payload;
+      })
+      .addCase(ownUsersPostsAsync.rejected, (state, action) => {
+        state.status = "idle";
+        state.userPosts = null;
+      })
+      .addCase(ownPublicUserPostsAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(ownPublicUserPostsAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.publicPosts = action.payload;
+      })
+      .addCase(ownPublicUserPostsAsync.rejected, (state, action) => {
+        state.status = "idle";
+        state.publicPosts = null;
+      })
       .addCase(LogoutUserAsync.pending, (state) => {
         state.status = "loading";
       })
       .addCase(LogoutUserAsync.fulfilled, (state, action) => {
         state.status = "idle";
         state.userObj = null;
+        state.closeFriends = null;
+        state.userPosts = null;
+        state.publicPosts = null;
+        state.savedPosts = null;
+        state.userNameError = null;
+        state.userBioError = null;
+        state.searchResults = null;
+        state.searchResultsError = null;
+        state.searchUserResults = null;
+        state.searchUserResultsError = null;
+        state.userFollowing = null;
+        state.userFollowers = null;
+        resetState(state);
       })
       .addCase(LogoutUserAsync.rejected, (state, action) => {
+        state.status = "idle";
+      })
+      .addCase(deleteUserAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(deleteUserAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.userObj = null;
+        state.closeFriends = null;
+        state.userPosts = null;
+        state.publicPosts = null;
+        state.savedPosts = null;
+        state.userNameError = null;
+        state.userBioError = null;
+        state.searchResults = null;
+        state.searchResultsError = null;
+        state.searchUserResults = null;
+        state.searchUserResultsError = null;
+        state.userFollowing = null;
+        state.userFollowers = null;
+      })
+      .addCase(deleteUserAsync.rejected, (state, action) => {
         state.status = "idle";
       });
   },
 });
 
-export const { addUser } = userSlice.actions;
+export const { addUser, resetUserState, resetUsersProfile } = userSlice.actions;
 
 export const selectUserObj = (state) => state.user.userObj;
+export const selectCloseFiends = (state) => state.user.closeFriends;
 export const selectSearchUserObj = (state) => state.user.searchUserResults;
 export const selectSearchUserObjError = (state) =>
   state.user.searchUserResultsError;
 export const selectSavedPosts = (state) => state.user.savedPosts;
+export const selectUserPosts = (state) => state.user.userPosts;
+export const selectUserFollowers = (state) => state.user.userFollowers;
+export const selectUserFollowing = (state) => state.user.userFollowing;
+export const selectPublicPosts = (state) => state.user.publicPosts;
 export const selectUserNameError = (state) => state.user.userNameError;
 export const selectSearchResults = (state) => state.user.searchResults;
 export const selectSearchResultsError = (state) =>

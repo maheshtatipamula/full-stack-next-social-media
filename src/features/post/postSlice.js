@@ -10,6 +10,7 @@ import {
   followersPosts,
   likeCommentOnPost,
   likePost,
+  singlePost,
   uploadPost,
 } from "./postAPI";
 import toast from "react-hot-toast";
@@ -20,6 +21,8 @@ const initialState = {
   explorePosts: [],
   explorePostsError: null,
   status: "idle",
+  commentRefresh: false,
+  singlePost: null,
 };
 
 export const uploadPostAsync = createAsyncThunk(
@@ -27,7 +30,7 @@ export const uploadPostAsync = createAsyncThunk(
   async ({ Image, caption }, { rejectWithValue }) => {
     try {
       const response = await uploadPost({ Image, caption });
-      console.log(response.data);
+
       toast.success(response.data.message);
 
       return response.data.post;
@@ -45,9 +48,24 @@ export const editPostAsync = createAsyncThunk(
   async ({ postId, caption }, { rejectWithValue }) => {
     try {
       const response = await editPost({ postId, caption });
-      console.log(response.data);
+
       toast.success(response.data.message);
 
+      return response.data.post;
+    } catch (error) {
+      const errorMessage = error || "Failed to update post";
+      toast.error(errorMessage);
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const singlePostAsync = createAsyncThunk(
+  "post/singlePost",
+  async (postId, { rejectWithValue }) => {
+    try {
+      const response = await singlePost(postId);
       return response.data.post;
     } catch (error) {
       const errorMessage = error || "Failed to update post";
@@ -63,7 +81,7 @@ export const deletePostAsync = createAsyncThunk(
   async (postId, { rejectWithValue }) => {
     try {
       const response = await deletePost(postId);
-      console.log(response.data);
+
       toast.success(response.data.message);
 
       return response.data.post;
@@ -81,7 +99,6 @@ export const followersPostsAsync = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await followersPosts();
-      console.log(response.data);
 
       return response.data.followersPosts;
     } catch (error) {
@@ -97,9 +114,8 @@ export const explorePostsAsync = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await explorePosts();
-      console.log(response.data);
 
-      return response.data.publicPosts;
+      return response.data.posts;
     } catch (error) {
       const errorMessage = error || "Failed to update post";
       toast.error(errorMessage);
@@ -113,7 +129,6 @@ export const likePostAsync = createAsyncThunk(
   async (postId, { rejectWithValue }) => {
     try {
       const response = await likePost(postId);
-      console.log(response.data);
 
       return response.data.post;
     } catch (error) {
@@ -130,7 +145,6 @@ export const commentPostAsync = createAsyncThunk(
   async ({ postId, comment }, { rejectWithValue }) => {
     try {
       const response = await commentPost({ postId, comment });
-      console.log(response.data);
 
       return response.data.publicPosts;
     } catch (error) {
@@ -144,10 +158,9 @@ export const commentPostAsync = createAsyncThunk(
 
 export const deleteCommentOnPostAsync = createAsyncThunk(
   "post/deleteCommentOnPost",
-  async ({ commentId }, { rejectWithValue }) => {
+  async (commentId, { rejectWithValue }) => {
     try {
-      const response = await deleteCommentOnPost({ commentId });
-      console.log(response.data);
+      const response = await deleteCommentOnPost(commentId);
 
       return response.data.publicPosts;
     } catch (error) {
@@ -161,10 +174,9 @@ export const deleteCommentOnPostAsync = createAsyncThunk(
 
 export const likeCommentOnPostAsync = createAsyncThunk(
   "post/likeCommentOnPost",
-  async ({ commentId }, { rejectWithValue }) => {
+  async (commentId, { rejectWithValue }) => {
     try {
-      const response = await likeCommentOnPost({ commentId });
-      console.log(response.data);
+      const response = await likeCommentOnPost(commentId);
 
       return response.data.publicPosts;
     } catch (error) {
@@ -179,7 +191,20 @@ export const likeCommentOnPostAsync = createAsyncThunk(
 const postSlice = createSlice({
   name: "post",
   initialState,
-  reducers: {},
+  reducers: {
+    commentRefresh: (state, action) => {
+      state.commentRefresh = action.payload;
+    },
+    resetState: (state) => {
+      state.followersPosts = [];
+      state.followersPostsError = null;
+      state.explorePosts = [];
+      state.explorePostsError = null;
+      state.status = "idle";
+      state.commentRefresh = false;
+      state.singlePost = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(uploadPostAsync.pending, (state) => {
@@ -199,6 +224,17 @@ const postSlice = createSlice({
       })
       .addCase(editPostAsync.rejected, (state, action) => {
         state.status = "idle";
+      })
+      .addCase(singlePostAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(singlePostAsync.fulfilled, (state, action) => {
+        state.status = "idle";
+        state.singlePost = action.payload;
+      })
+      .addCase(singlePostAsync.rejected, (state, action) => {
+        state.status = "idle";
+        state.singlePost = null;
       })
       .addCase(deletePostAsync.pending, (state) => {
         state.status = "loading";
@@ -276,5 +312,8 @@ const postSlice = createSlice({
 
 export const selectUserFollowersPosts = (state) => state.post.followersPosts;
 export const selectExplorePosts = (state) => state.post.explorePosts;
+export const selectSinglePost = (state) => state.post.singlePost;
+export const selectCommentRefresh = (state) => state.post.commentRefresh;
+export const { commentRefresh, resetState } = postSlice.actions;
 
 export default postSlice.reducer;

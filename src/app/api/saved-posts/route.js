@@ -58,7 +58,12 @@ export async function GET(req) {
 // Function to fetch posts from an array of saved post IDs
 async function fetchSavedPosts(savedPostIDs) {
   try {
-    const posts = await Post.find({ _id: { $in: savedPostIDs } });
+    const posts = await Post.find({ _id: { $in: savedPostIDs } }).populate({
+      path: "comments",
+      populate: {
+        path: "userId",
+      },
+    });
     return posts;
   } catch (error) {
     console.error(error);

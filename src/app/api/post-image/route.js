@@ -40,7 +40,7 @@ export async function POST(req) {
       { status: 200 }
     );
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     if (error.message === "jwt expired") {
       const response = NextResponse.json(
         { message: error.message },

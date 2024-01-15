@@ -9,12 +9,17 @@ dbConnect();
 export async function PUT(req) {
   const body = await req.json();
   const { postId } = body;
-  console.log(postId);
-  // 658412517776b84772491746
   try {
     const userId = await verifyToken(req);
 
-    const post = await Post.findById(postId).populate("userId");
+    const post = await Post.findById(postId)
+      .populate("userId")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "userId",
+        },
+      });
     if (!post)
       return NextResponse.json(
         { success: false, message: " post not found" },
@@ -51,7 +56,6 @@ export async function PUT(req) {
       );
     }
   } catch (error) {
-    console.log(error);
     if (error.message === "jwt expired") {
       const response = NextResponse.json(
         { message: error.message },

@@ -1,5 +1,6 @@
 "use client";
 
+import { resetState } from "@/features/post/postSlice";
 import { LogoutUserAsync } from "@/features/user/userSlice";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -14,8 +15,9 @@ const LogoutButton = () => {
   const handleLogout = async () => {
     try {
       const res = await dispatch(LogoutUserAsync());
-      console.log("res");
+
       if (res.meta.requestStatus === "fulfilled") {
+        dispatch(resetState());
         router.replace("/login");
       }
     } catch (error) {

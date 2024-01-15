@@ -9,7 +9,6 @@ dbConnect();
 export async function DELETE(req, { params }) {
   try {
     const { postId } = params;
-    console.log(postId);
     const userId = await verifyToken(req);
 
     // Check if the post exists
@@ -34,13 +33,13 @@ export async function DELETE(req, { params }) {
 
     // await Comment.deleteMany({ postId });
 
-    // const user = await User.findById(userId);
-    // if (user) {
-    //   user.posts = user.posts.filter(
-    //     (userPostId) => userPostId.toString() !== postId
-    //   );
-    //   await user.save();
-    // }
+    const user = await User.findById(userId);
+    if (user) {
+      user.posts = user.posts.filter(
+        (userPostId) => userPostId.toString() !== postId
+      );
+      await user.save();
+    }
 
     await post.deleteOne();
 
@@ -52,7 +51,46 @@ export async function DELETE(req, { params }) {
       { status: 200 }
     );
   } catch (error) {
-    console.log(error);
+    // //console.log(error);
+    if (error.message === "jwt expired") {
+      const response = NextResponse.json(
+        { message: error.message },
+        { status: 401 }
+      );
+
+      response.cookies.delete("token");
+
+      return response;
+    }
+    return NextResponse.json({ message: error.message }, { status: 400 });
+  }
+}
+
+export async function GET(req, { params }) {
+  try {
+    const userId = await verifyToken(req);
+    const { postId } = params;
+
+    let post = await Post.findById(postId)
+      .populate("userId")
+      .populate({
+        path: "comments",
+        options: { sort: { createdAt: -1 } },
+        populate: {
+          path: "userId",
+        },
+      });
+
+    return NextResponse.json(
+      {
+        success: true,
+        post,
+      },
+      {
+        status: 200,
+      }
+    );
+  } catch (error) {
     if (error.message === "jwt expired") {
       const response = NextResponse.json(
         { message: error.message },

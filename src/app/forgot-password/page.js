@@ -19,11 +19,6 @@ const ForgotPassword = () => {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    return () => {
-      console.log("return");
-    };
-  });
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {

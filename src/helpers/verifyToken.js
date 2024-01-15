@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
-import { handleErrorResponse } from "./errorMessage";
 
 export const verifyToken = asyncHandler(async (req) => {
   try {

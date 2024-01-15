@@ -1,118 +1,123 @@
 "use client";
 import {
-  commentPostAsync,
-  deletePostAsync,
   explorePostsAsync,
-  likePostAsync,
-  selectExplorePosts,
+  followersPostsAsync,
+  singlePostAsync,
 } from "@/features/post/postSlice";
 import {
   fetchSavedPostsAsync,
+  getLoggedInUserAsync,
+  getUsersAsync,
+  getUsersFollowingAsync,
+  ownUsersPostsAsync,
+  removeFollowersAsync,
   selectSavedPosts,
+  selectUserFollowers,
+  selectUserFollowing,
   selectUserObj,
-  updateSavedPostsAsync,
+  selectUserPosts,
+  updateFollowersAsync,
 } from "@/features/user/userSlice";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RxCross1 } from "react-icons/rx";
-import { BsHeart } from "react-icons/bs";
-import { FaRegComment } from "react-icons/fa";
-import { MdDeleteOutline } from "react-icons/md";
-import { FcLike } from "react-icons/fc";
-import { FaRegSave } from "react-icons/fa";
-import { IoSave } from "react-icons/io5";
-import { GoPencil } from "react-icons/go";
-import { AiFillDelete } from "react-icons/ai";
+
+import { useRouter } from "next/navigation";
 
 const UserProfile = () => {
+  const dispatch = useDispatch();
+  const router = useRouter();
+
   const user = useSelector(selectUserObj);
-  const posts = useSelector(selectExplorePosts);
-  console.log("from log", posts);
+  const userFollowers = useSelector(selectUserFollowers);
+  const userFollowing = useSelector(selectUserFollowing);
+  const usersPosts = useSelector(selectUserPosts);
+  const savedPosts = useSelector(selectSavedPosts);
+
   const [showSaved, setShowSaved] = useState(false);
   const [showFollowers, setShowFollowers] = useState(false);
-  const [showPost, setShowPost] = useState(false);
-  const [detailedPost, setdetailedPost] = useState();
-  const dispatch = useDispatch();
-  const savedPosts = useSelector(selectSavedPosts);
-  const [visible, setVisible] = useState(false);
-  const [comment, setComment] = useState();
+  const [showFollowing, setShowFollowing] = useState(false);
+
   const [refresh, setRefresh] = useState(false);
+  const [FollowersRefresh, setFollowersRefresh] = useState(false);
 
-  const handlePosts = (post) => {
-    setShowPost(true);
-    setdetailedPost(post);
-  };
-  const closePost = () => {
-    setShowPost(false);
-    setdetailedPost(null);
+  const handleShowFollowers = (id) => {
+    dispatch(getUsersFollowingAsync(id));
+    setShowFollowers(true);
   };
 
-  const handleDelete = async (postId) => {
-    await dispatch(deletePostAsync(postId));
-    setShowPost(false);
-    setdetailedPost(null);
+  const handleShowFollowing = (id) => {
+    dispatch(getUsersFollowingAsync(id));
+    setShowFollowing(true);
   };
 
-  const handleEditPost = () => {};
-  const handleLike = async (postId) => {
-    const res = await dispatch(likePostAsync(postId));
-    console.log(res);
+  const handlePosts = async (postId) => {
+    const res = await dispatch(singlePostAsync(postId));
+    if (res.meta.requestStatus === "fulfilled") {
+      router.push("/dashboard/single-post");
+    }
+  };
+
+  const handleClick = async (username) => {
+    dispatch(getUsersAsync(username));
+    router.push("/dashboard/users-profile");
+  };
+
+  const handleFollowers = async (friendId) => {
+    await dispatch(updateFollowersAsync(friendId));
+    dispatch(followersPostsAsync());
+    dispatch(getUsersFollowingAsync(user._id));
     setRefresh(!refresh);
-    setdetailedPost(res.payload);
+    dispatch(explorePostsAsync());
   };
 
-  // const handleSavedLike = async (postId) => {
-  //   await dispatch(likePostAsync(postId));
-
-  //   dispatch(fetchSavedPostsAsync());
-  //   dispatch(explorePostsAsync());
-  //   setRefresh(!refresh);
-  //   const delpos = savedPosts.filter((p) => p._id === postId);
-  //   setdetailedPost(delpos[0]);
-  // };
-
-  const handleSavedPosts = async (postId) => {
-    await dispatch(updateSavedPostsAsync(postId));
-    dispatch(fetchSavedPostsAsync());
-    // setRefresh(!refresh);
+  const handleRemoveFollowers = async (friendId) => {
+    await dispatch(removeFollowersAsync(friendId));
+    setFollowersRefresh(!FollowersRefresh);
   };
 
-  const handleComment = async (e, postId) => {
-    e.preventDefault();
-    await dispatch(commentPostAsync({ postId, comment }));
-    setVisible(false);
-    setComment(null);
-    setRefresh(!refresh);
-  };
-
-  console.log(detailedPost);
   useEffect(() => {
     dispatch(fetchSavedPostsAsync());
     dispatch(explorePostsAsync());
+    dispatch(ownUsersPostsAsync());
+    dispatch(getLoggedInUserAsync());
+    dispatch(followersPostsAsync());
+    if (user) {
+      dispatch(getUsersFollowingAsync(user._id));
+    }
   }, [dispatch, refresh]);
+  useEffect(() => {
+    dispatch(getLoggedInUserAsync());
+    if (user) {
+      dispatch(getUsersFollowingAsync(user._id));
+    }
+  }, [dispatch, FollowersRefresh]);
 
   return (
     <>
       {user && (
         <div
-          className={`w-[80%]   mx-auto relative ${
+          className={`px-2 py-1 md:p-0 md:w-[80%]   md:mx-auto relative ${
             showFollowers && "backdrop-blur-md"
           } `}
         >
-          <div className=" flex gap-5 text-xl  h-auto mt-5">
+          <div className=" flex md:gap-5  h-auto mt-5">
             <div className="w-[38%] p-1 ">
               <Image
                 src={`/${user?.profileImage}`}
                 height={300}
                 width={300}
                 className=" rounded-full"
+                alt={user?.profileImage}
               />
             </div>
             <div className="flex flex-col justify-evenly w-[60%]">
-              <div className="flex justify-between">
-                <h1 className="text-2xl"> {user?.username}</h1>
+              <div className="flex w-full gap-1 justify-between">
+                <h1 className="text-lg overflow-ellipsis md:text-2xl">
+                  {user?.username}
+                </h1>
                 <Link
                   href="/dashboard/edit-profile"
                   className="bg-slate-500 mr-5 w-[50px] h-[30px] text-center rounded-sm hover:bg-slate-600"
@@ -121,22 +126,24 @@ const UserProfile = () => {
                   edit
                 </Link>
               </div>
-              <div className="flex gap-2 justify-between">
-                <p>
-                  <strong>posts</strong>
+              <div className="flex gap-1 md:gap-2 justify-between">
+                <p className="text-md md:text-xl">
+                  <strong className="mr-1">posts</strong>
                   {user?.posts.length}
                 </p>
-                <p onClick={() => setShowFollowers(true)}>
-                  <strong className="cursor-pointer">followers</strong>
+                <p onClick={() => handleShowFollowers(user._id)}>
+                  <strong className="cursor-pointer mr-1">followers</strong>
                   {user?.followers.length}
                 </p>
-                <p>
-                  <strong>following</strong>
+                <p onClick={() => handleShowFollowing(user._id)}>
+                  <strong className="cursor-pointer mr-1">following</strong>
                   {user?.following.length}
                 </p>
               </div>
-              <div>
-                <p>{user?.bio}</p>
+              <div className="overflow-auto">
+                <p className=" overflow-ellipsis text-md md:text-lg">
+                  {user?.bio}
+                </p>
               </div>
             </div>
           </div>
@@ -174,21 +181,23 @@ const UserProfile = () => {
             </ul>
           </div>
           {!showSaved && (
-            <div className="flex flex-wrap gap-2 w-[100%] h-auto overflow-y-scroll scrollbar">
-              {posts &&
-                posts.map((post) => {
-                  return (
-                    <Image
-                      key={post._id}
-                      src={`/${post?.Image}`}
-                      onClick={() => handlePosts(post)}
-                      className="w-[80px] h-[80px] md:w-[120px] md:h-[120px] lg:w-[200px] lg:h-[200px]  mb-5 object-cover "
-                      width={200}
-                      height={200}
-                      alt="posts"
-                    />
-                  );
-                })}
+            <div className="mx-auto">
+              <div className=" flex flex-wrap gap-2 w-[100%]  h-auto overflow-y-scroll scrollbar">
+                {usersPosts &&
+                  usersPosts.map((post) => {
+                    return (
+                      <Image
+                        key={post._id}
+                        src={`/${post?.Image}`}
+                        onClick={() => handlePosts(post._id)}
+                        className="w-[115px] h-[115px]  lg:w-[150px] lg:h-[150px]  xl:w-[160px] xl:h-[160px] mb-5 object-cover "
+                        width={200}
+                        height={200}
+                        alt="posts"
+                      />
+                    );
+                  })}
+              </div>
             </div>
           )}
           {showSaved && (
@@ -199,8 +208,8 @@ const UserProfile = () => {
                     <Image
                       key={post._id}
                       src={`/${post?.Image}`}
-                      onClick={() => handlePosts(post)}
-                      className="w-[80px] h-[80px] md:w-[120px] md:h-[120px] lg:w-[200px] lg:h-[200px]  mb-5 object-cover "
+                      onClick={() => handlePosts(post._id)}
+                      className="w-[115px] h-[115px]  lg:w-[150px] lg:h-[150px]  xl:w-[160px] xl:h-[160px] mb-5 object-cover "
                       width={200}
                       height={200}
                       alt="posts"
@@ -209,112 +218,86 @@ const UserProfile = () => {
                 })}
             </div>
           )}
-          {showFollowers && (
-            <div className="absolute h-[500px] w-[100%] bg-slate-500  top-[80px]">
+          {user && showFollowers && userFollowers && (
+            <div className="absolute h-[500px] w-[100%] bg-slate-500  top-[80px] p-5">
               <button onClick={() => setShowFollowers(false)} className="">
                 <RxCross1 />
               </button>
-            </div>
-          )}
-          {posts && detailedPost && (
-            <div className="absolute  h-[600px] w-[110%] bg-slate-500  top-[80px]">
-              <div className=" flex relative w-auto">
-                <Image
-                  key={detailedPost._id}
-                  src={`/${detailedPost?.Image}`}
-                  className="w-[80px] h-[80px] md:w-[120px] md:h-[120px] lg:w-[450px] lg:h-[600px]   object-cover "
-                  width={500}
-                  height={600}
-                  alt="posts"
-                />
-                <div className="p-2 overflow-y-scroll scrollbar">
-                  <div className="flex  gap-1 w-[100%]">
-                    <Image
-                      src={`/${detailedPost.userId.profileImage}`}
-                      alt="post author profile"
-                      width={45}
-                      height={45}
-                      className=" border-2 border-white rounded-full"
-                    />
-                    <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
-                      {detailedPost.userId.username}
-                    </p>
-                    <button
-                      onClick={() => closePost()}
-                      className="absolute top-2 right-2 "
-                    >
-                      <RxCross1 />
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-5 my-2  ">
-                    <div className="flex items-center gap-5 my-2 ">
-                      {detailedPost &&
-                      detailedPost?.likes.length >= 1 &&
-                      detailedPost?.likes.includes(user._id.toString()) ? (
-                        <button
-                          className="flex justify-center items-center rounded-0 mr-13.78 p-0 border-none bg-transparent cursor-pointer outline-none"
-                          onClick={() => handleLike(detailedPost._id)}
-                        >
-                          <FcLike className=" h-[20px] w-[22.22222137451172px]  " />
-                        </button>
-                      ) : (
-                        <button
-                          className="flex justify-center items-center rounded-0 mr-13.78 p-0 border-none bg-transparent cursor-pointer outline-none"
-                          onClick={() => handleLike(detailedPost._id)}
-                        >
-                          <BsHeart className=" h-[20px] w-[22.22222137451172px]  " />
-                        </button>
-                      )}
-                      <button
-                        className="flex justify-center items-center rounded-0 mr-13.78 p-0 border-none bg-transparent cursor-pointer outline-none"
-                        onClick={() => setVisible(!visible)}
+              {userFollowers &&
+                userFollowers.map((follower) => (
+                  <div
+                    key={follower._id}
+                    className="flex gap-2 mt-4 w-[100%] justify-around items-center"
+                  >
+                    <div className="flex gap-2">
+                      <Image
+                        src={`/${follower.profileImage}`}
+                        alt="post author profile"
+                        width={45}
+                        height={45}
+                        className=" border-2 border-white rounded-full"
+                      />
+
+                      <h1
+                        className="self-start mt-2  text-2xl cursor-pointer "
+                        onClick={() => handleClick(follower.username)}
                       >
-                        <FaRegComment className=" h-[20px] w-[22.22222137451172px]  " />
-                      </button>
+                        {follower.username}
+                      </h1>
                     </div>
 
                     <div>
-                      {user.savedPosts.includes(detailedPost._id.toString()) ? (
-                        <button
-                          className="flex justify-center items-center rounded-0 mr-13.78 p-0 border-none bg-transparent cursor-pointer outline-none"
-                          onClick={() => handleSavedPosts(detailedPost._id)}
-                        >
-                          <IoSave className=" h-[20px] w-[22.22222137451172px]  " />
-                        </button>
-                      ) : (
-                        <button
-                          className="flex justify-center items-center rounded-0 mr-13.78 p-0 border-none bg-transparent cursor-pointer outline-none"
-                          onClick={() => handleSavedPosts(detailedPost._id)}
-                        >
-                          <FaRegSave className=" h-[20px] w-[22.22222137451172px]  " />
-                        </button>
-                      )}
+                      <button
+                        className="bg-slate-700 mr-5 w-[auto] h-[30px] text-center rounded-sm hover:bg-slate-600  px-2"
+                        onClick={() => handleRemoveFollowers(follower._id)}
+                      >
+                        remove
+                      </button>
                     </div>
-                    {detailedPost.userId._id === user._id && (
-                      <button
-                        className="flex justify-center items-center rounded-0 mr-13.78 p-0 border-none bg-transparent cursor-pointer outline-none"
-                        onClick={() => handleDelete(detailedPost._id)}
-                      >
-                        <AiFillDelete className=" h-[20px] w-[22.22222137451172px]  " />
-                      </button>
-                    )}
-                    {detailedPost.userId._id === user._id && (
-                      <button
-                        className="flex justify-center items-center rounded-0 mr-13.78 p-0 border-none bg-transparent cursor-pointer outline-none"
-                        onClick={() => handleDelete(detailedPost._id)}
-                      >
-                        <GoPencil className=" h-[20px] w-[22.22222137451172px]  " />
-                      </button>
-                    )}
                   </div>
-                  <p>
-                    <span className="text-lg  mr-2">
-                      {detailedPost.userId.username}
-                    </span>
-                    {detailedPost.caption ? detailedPost.caption : ""}
-                  </p>
-                </div>
-              </div>
+                ))}
+            </div>
+          )}
+          {user && showFollowing && userFollowing && (
+            <div className="absolute h-[500px] w-[100%] bg-slate-500  top-[80px] p-5">
+              <button onClick={() => setShowFollowing(false)} className="">
+                <RxCross1 />
+              </button>
+              {userFollowing &&
+                userFollowing.map((follower) => (
+                  <div
+                    key={follower._id}
+                    className="flex gap-2 mt-4 w-[100%] justify-around items-center"
+                  >
+                    <div className="flex gap-2">
+                      <Image
+                        src={`/${follower.profileImage}`}
+                        alt="post author profile"
+                        width={45}
+                        height={45}
+                        className=" border-2 border-white rounded-full"
+                      />
+
+                      <h1
+                        className="self-start mt-2  text-2xl cursor-pointer "
+                        onClick={() => handleClick(follower.username)}
+                      >
+                        {follower.username}
+                      </h1>
+                    </div>
+
+                    <div>
+                      <button
+                        className="bg-slate-700 mr-5 w-[auto] h-[30px] text-center rounded-sm hover:bg-slate-600  px-2"
+                        onClick={() => handleFollowers(follower._id)}
+                      >
+                        {user.following.includes(follower._id)
+                          ? "UnFollow"
+                          : " Follow"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
             </div>
           )}
         </div>
@@ -324,55 +307,3 @@ const UserProfile = () => {
 };
 
 export default UserProfile;
-
-// {user.followers.length>=1 && (
-//   user.followers.map((follower)=>    <ul key={follower.id}
-//     role="list"
-//     className="divide-y divide-gray-200 dark:divide-gray-700 w-[80%]"
-//   >
-//     <Link href={"/dashboard/users-profile"}>
-//       <li className="py-3 sm:py-4">
-//         <div className="flex items-center">
-//           <div className="flex-shrink-0">
-//             <Image
-//               src={`/${user.profileImage}`}
-//               alt="post author profile"
-//               width={68}
-//               height={68}
-//               className=" border-2 border-white rounded-full"
-//             />
-//           </div>
-//           <div className="flex-1 min-w-0 ms-4">
-//             <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
-//               {user.username}
-//             </p>
-//             <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-//               {user.email}
-//             </p>
-//           </div>
-//           <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-//             {user._id === user._id ? (
-//               <Link
-//                 href="/dashboard/edit-profile"
-//                 className="bg-slate-500 mr-5 w-[50px] h-[30px] text-center rounded-sm hover:bg-slate-600"
-//               >
-//                 {" "}
-//                 edit
-//               </Link>
-//             ) : (
-//               <button
-//                 className="bg-slate-500 mr-5 w-[auto] h-[30px] text-center rounded-sm hover:bg-slate-600  px-2"
-//                 onClick={() => handleFollowers(user._id)}
-//               >
-//                 {user.following.includes(user._id)
-//                   ? "UnFollow"
-//                   : " Follow"}
-//               </button>
-//             )}
-//           </div>
-//         </div>
-//       </li>
-//     </Link>
-//   </ul>)
-
-// )}

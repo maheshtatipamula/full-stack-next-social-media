@@ -31,6 +31,7 @@ export async function POST(req) {
 
     const salt = await bcrypt.genSaltSync(10);
     body.password = await bcrypt.hash(body.password, salt);
+
     const activationToken = createActivationToken(body);
     const activationCode = activationToken.activationCode;
     const resetUrl = `<p>hey ${body.username}<br>
@@ -50,7 +51,7 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (error) {
-    console.log(error);
+    // //console.log(error);
 
     return NextResponse.json(
       { message: "something went wrong" },

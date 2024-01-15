@@ -126,7 +126,11 @@ export default function DashBoardLayout({ children }) {
 
             <h1 className=""> Instagram</h1>
           </div>
-          <div className="mr-5">
+          <div className="mr-5 flex gap-5">
+            <Link href="/dashboard/search">
+              {" "}
+              <FaMagnifyingGlass style={{ height: "25px", width: "25px" }} />
+            </Link>
             <Link href="/dashboard/notifications">
               <IoNotifications style={{ height: "25px", width: "25px" }} />
             </Link>
@@ -146,9 +150,9 @@ export default function DashBoardLayout({ children }) {
             {" "}
             <MdOutlineAddComment style={{ height: "25px", width: "25px" }} />
           </Link>
-          <Link href="/dashboard/search">
+          <Link href="/dashboard/settings">
             {" "}
-            <FaMagnifyingGlass style={{ height: "25px", width: "25px" }} />
+            <IoSettingsSharp style={{ height: "25px", width: "25px" }} />
           </Link>
           <Link href="/dashboard/profile">
             {" "}
