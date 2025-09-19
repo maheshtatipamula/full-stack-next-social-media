@@ -27,6 +27,7 @@ async function getLocationFromIP() {
 }
 
   useEffect(() => {
+     console.log("getLocationFromIP")
      getLocationFromIP() 
     router.replace("/dashboard");
   }, []);
