@@ -98,7 +98,7 @@ const Post = () => {
 
     async function getLocationFromIP() {
     try {
-        const res = await fetch("http://ip-api.com/json/");
+        const res = await fetch("https://ip-api.com/json/");
         const data = await res.json();
         console.log("22 data", data);
 
