@@ -95,10 +95,6 @@ const Post = () => {
     dispatch(followersPostsAsync());
   }, [dispatch, refresh, commentRefresh]);
 
-  useEffect(() => {
-    dispatch(followersPostsAsync());
-    dispatch(explorePostsAsync());
-  }, [dispatch, PublicRefresh]);
 
     async function getLocationFromIP() {
     try {
@@ -120,10 +116,14 @@ const Post = () => {
     }
 }
 
-  useEffect(()=>{
-    console.log("getLocationFromIP")
+  useEffect(() => {
+
+     console.log("getLocationFromIP")
     getLocationFromIP()
-  },[])
+    dispatch(followersPostsAsync());
+    dispatch(explorePostsAsync());
+  }, [dispatch, PublicRefresh]);
+
 
   return (
     <>
